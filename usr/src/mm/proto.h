@@ -12,7 +12,7 @@ _PROTOTYPE( int swap_off, (void)					);
 _PROTOTYPE( void swap_in, (void)					);
 _PROTOTYPE( void swap_inqueue, (struct mproc *rmp)			);
 _PROTOTYPE( int do_hole_map, (void)					);
-_PROTOTYPE( int do_best_fit, (void)					);
+_PROTOTYPE( int do_chmem_alloc_alg, (void)					);
 
 /* break.c */
 _PROTOTYPE( int adjust, (struct mproc *rmp,
