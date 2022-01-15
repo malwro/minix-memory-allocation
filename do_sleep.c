@@ -1,5 +1,4 @@
-/* x.c - program pomocniczy x, okrojona wersja polecenia sleep */
-/* wykorzystywana do testów */
+/* helper programm; crippled version of sleep command. Used for testing */
 #include <stdlib.h>
 #include <unistd.h>
 

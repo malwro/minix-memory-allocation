@@ -1,4 +1,5 @@
-/* t.c - polecenie t wyswietla liczbe i rozmiary blokow wolnych */
+/* displays number and sizes of free memory blocks */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <lib.h>
@@ -20,12 +21,12 @@ main( void )
         int     res;
 
 		res = hole_map( b, sizeof( b ) );
-        printf( "[%d] ", res ); /* liczba par adres-rozmiar */
+        printf( "[%d] ", res ); /* number of pairs addesss-size */
         p = b;
         while( *p )
         {
                 l = *p++; /* size */
-                a = *p++; /* tu niewykorzystywane */
+                a = *p++; /* not used */
                 printf( "%d ", l );
         }
         printf( "\n" );
