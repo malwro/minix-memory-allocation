@@ -38,7 +38,7 @@ PRIVATE phys_clicks swap_base;	/* memory offset chosen as swap base */
 PRIVATE phys_clicks swap_maxsize;/* maximum amount of swap "memory" possible */
 PRIVATE struct mproc *in_queue;	/* queue of processes wanting to swap in */
 PRIVATE struct mproc *outswap = &mproc[LOW_USER];  /* outswap candidate? */
-PRIVATE int is_best_fit_used; /* if set to 1 - allocate mem using best fit 
+PRIVATE int mem_alloc_alg_used; /* if set to 1 - allocate mem using best fit 
 algorithm, use standard algorithm otherwise */
 
 FORWARD _PROTOTYPE( void del_slot, (struct hole *prev_ptr, struct hole *hp) );
@@ -62,11 +62,12 @@ phys_clicks clicks;		/* amount of memory requested */
  */
 
   register struct hole *hp, *prev_ptr, *min_hole = NIL_HOLE, *prev_min_hole = NIL_HOLE;
+  register struct hole *max_hole = NIL_HOLE, *prev_max_hole = NIL_HOLE;
   phys_clicks old_base;
 
   do {
 	hp = hole_head;
-  switch (is_best_fit_used) {
+  switch (mem_alloc_alg_used) {
   case 0: { /* first fit */
     while (hp != NIL_HOLE && hp->h_base < swap_base) {
       if (hp->h_len >= clicks) {
@@ -88,7 +89,6 @@ phys_clicks clicks;		/* amount of memory requested */
   }
     break;
   case 1: { /* best fit */
-    /* check for available memory */
     min_hole = NIL_HOLE;
     while (hp != NIL_HOLE && hp->h_base < swap_base) {
       if (hp->h_len == clicks) {
@@ -111,6 +111,38 @@ phys_clicks clicks;		/* amount of memory requested */
     old_base = min_hole->h_base;
     min_hole->h_base += clicks;
     min_hole->h_len -= clicks;
+    return (old_base);
+  }
+    break;
+  case 2: {
+    /* check for available memory */
+    if (hp != NIL_HOLE) {
+      max_hole = hp;
+      prev_max_hole = NIL_HOLE;
+    }
+    else {
+      /* There is no available memory */
+      return NO_MEM;
+    }
+    while (hp != NIL_HOLE && hp->h_base < swap_base) {
+      /* We found a bigger hole than previous find */
+      if (hp->h_len > max_hole->h_len && hp->h_len >= clicks) {
+        max_hole = hp;
+        prev_max_hole = prev_ptr;
+      }
+      prev_ptr = hp;
+      hp = hp->h_next;
+    }
+    if (max_hole->h_len < clicks) continue; /* biggest hole not found yet, continue */
+    /* We found a hole that is big enough.  Use it. */
+    old_base = max_hole->h_base; /* remember starting place */
+    max_hole->h_base += clicks; /* bite a piece off */
+    max_hole->h_len -= clicks; /* ditto */
+
+    /* Delete the hole if used up completely. */
+    if (max_hole->h_len == 0) del_slot(prev_max_hole, max_hole);
+
+    /* Return the start address of the acquired block */
     return (old_base);
   }
     break;
@@ -485,11 +517,15 @@ PUBLIC int do_hole_map(void) {
 /*===========================================================================*
  *				do_worst_fit				     *
  *===========================================================================*/
-PUBLIC int do_best_fit(void) {
-  /* sets used allocation algorithm to best */
+PUBLIC int do_chmem_alloc_alg(void) {
+  /* sets used allocation algorithm to:
+  *  0 - first fit (standard)
+  *  1 - best fit
+  *  2 - worst fit
+  */
     int msg = mm_in.m1_i1;
-    if (msg == 0 || msg == 1) {
-        is_best_fit_used = msg;
+    if (msg == 0 || msg == 1 || msg == 2) {
+        mem_alloc_alg_used = msg;
     }
     /* should leave it at choice of
     *  standard algorithm when wrong

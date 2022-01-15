@@ -67,4 +67,4 @@
 #define SVRCTL		  77
 
 #define HOLE_MAP	78      /* to MM: make hole map */
-#define BEST_FIT	79      /* to MM: change mem allocation algorithm to best fit */
+#define CHMEM_ALLOC_ALG	79      /* to MM: change memory allocation algorithm */
