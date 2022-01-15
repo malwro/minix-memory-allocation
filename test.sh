@@ -1,49 +1,50 @@
 #!/bin/sh
-# skrypt do testowania działania funkcji systemowych 
-# HOLE_MAP oraz WORST_FIT
-cc -o t t.c 
-cc -o w w.c
-cc -o x x.c
-chmem =8000 x
+# script for tests of HOLE_MAP AND CHMEM_ALLOC_ALG
+# system functions
+
+cc -o hole_map hole_map.c 
+cc -o chmem_alloc_alg chmem_alloc_alg.c
+cc -o do_sleep do_sleep.c
+chmem =8000 do_sleep
 
 echo "-[ std ]----------------------------------------"
-./w 0
+./chmem_alloc_alg 0
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-	./x 10 &
-	./t
+	./do_sleep 10 &
+	./hole_map
 	sleep 1
 done
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-	./t
+	./hole_map
 	sleep 1
 done
 echo "-[ best ]--------------------------------------"
-./w 1
+./chmem_alloc_alg 1
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-	./x 10 &
-	./t
+	./do_sleep 10 &
+	./hole_map
 	sleep 1
 done
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-	./t
+	./hole_map
 	sleep 1
 done
-echo "-[ worst ]--------------------------------------"
-./w 2
+echo "-[ chmem_alloc_algorst ]--------------------------------------"
+./chmem_alloc_alg 2
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-	./x 10 &
-	./t
+	./do_sleep 10 &
+	./hole_map
 	sleep 1
 done
 for i in 1 2 3 4 5 6 7 8 9 10
 do
-	./t
+	./hole_map
 	sleep 1
 done
 echo "-[ std ]----------------------------------------"
-./w 0
+./chmem_alloc_alg 0
